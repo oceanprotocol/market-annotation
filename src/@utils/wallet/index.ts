@@ -1,14 +1,16 @@
 import { LoggerInstance } from '@oceanprotocol/lib'
-import { createClient, erc20ABI } from 'wagmi'
-import { mainnet, polygon, optimism, sepolia } from 'wagmi/chains'
-import { localhost } from '@wagmi/core/chains'
-import { ethers, Contract, Signer } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
-import { getDefaultClient } from 'connectkit'
+import {
+  Contract,
+  Signer,
+  JsonRpcProvider,
+  Wallet,
+  Provider,
+  isAddress,
+  formatEther
+} from 'ethers'
 import { getNetworkDisplayName } from '@hooks/useNetworkMetadata'
 import { getOceanConfig } from '../ocean'
-import { getSupportedChains } from './chains'
-import { chainIdsSupported } from '../../../app.config.cjs'
+import erc20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 
 export async function getDummySigner(chainId: number): Promise<Signer> {
   if (typeof chainId !== 'number') {
@@ -20,40 +22,11 @@ export async function getDummySigner(chainId: number): Promise<Signer> {
   try {
     const privateKey =
       '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
-    const provider = new ethers.providers.JsonRpcProvider(config.nodeUri)
-    return new ethers.Wallet(privateKey, provider)
+    const provider = new JsonRpcProvider(config.nodeUri, config.chainId)
+    return new Wallet(privateKey, provider)
   } catch (error) {
     throw new Error(`Failed to create dummy signer: ${error.message}`)
   }
-}
-
-// Wagmi client
-const chains = [...getSupportedChains(chainIdsSupported)]
-if (process.env.NEXT_PUBLIC_MARKET_DEVELOPMENT === 'true') {
-  chains.push({ ...localhost, id: 8996 })
-}
-export const wagmiClient = createClient(
-  getDefaultClient({
-    appName: 'Ocean Market',
-    infuraId: process.env.NEXT_PUBLIC_INFURA_PROJECT_ID,
-    chains,
-    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
-  })
-)
-
-// ConnectKit CSS overrides
-// https://docs.family.co/connectkit/theming#theme-variables
-export const connectKitTheme = {
-  '--ck-font-family': 'var(--font-family-base)',
-  '--ck-border-radius': 'var(--border-radius)',
-  '--ck-overlay-background': 'var(--background-body-transparent)',
-  '--ck-modal-box-shadow': '0 0 20px 20px var(--box-shadow-color)',
-  '--ck-body-background': 'var(--background-body)',
-  '--ck-body-color': 'var(--font-color-text)',
-  '--ck-primary-button-border-radius': 'var(--border-radius)',
-  '--ck-primary-button-color': 'var(--font-color-heading)',
-  '--ck-primary-button-background': 'var(--background-content)',
-  '--ck-secondary-button-border-radius': 'var(--border-radius)'
 }
 
 export function accountTruncate(account: string): string {
@@ -158,12 +131,12 @@ export async function getTokenBalance(
   accountId: string,
   decimals: number,
   tokenAddress: string,
-  web3Provider: ethers.providers.Provider
+  web3Provider: Provider
 ): Promise<string | undefined> {
   if (!web3Provider || !accountId || !tokenAddress) return
 
   try {
-    if (!ethers.utils.isAddress(tokenAddress)) {
+    if (!isAddress(tokenAddress)) {
       LoggerInstance.warn(`Invalid token address: ${tokenAddress}`)
       return
     }
@@ -174,7 +147,7 @@ export async function getTokenBalance(
       return
     }
 
-    const token = new Contract(tokenAddress, erc20ABI, web3Provider)
+    const token = new Contract(tokenAddress, erc20ABI.abi, web3Provider)
     const balance = await token.balanceOf(accountId)
 
     const adjustedDecimalsBalance = `${balance}${'0'.repeat(18 - decimals)}`

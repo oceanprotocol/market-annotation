@@ -31,12 +31,11 @@ import {
   marketFeeAddress,
   publisherMarketOrderFee,
   publisherMarketFixedSwapFee,
-  defaultDatatokenTemplateIndex,
-  customProviderUrl
+  defaultDatatokenTemplateIndex
 } from '../../../app.config.cjs'
 import { sanitizeUrl } from '@utils/url'
 import { getContainerChecksum } from '@utils/docker'
-import { parseEther } from 'ethers/lib/utils'
+import { parseEther } from 'ethers'
 
 function getUrlFileExtension(fileUrl: string): string {
   const splittedFileUrl = fileUrl.split('.')
@@ -298,7 +297,7 @@ export async function createTokensAndPricing(
 
       erc721Address = nftCreatedEvent.args.newTokenAddress
       datatokenAddress = tokenCreatedEvent.args.newTokenAddress
-      txHash = trxReceipt.transactionHash
+      txHash = trxReceipt.hash
 
       LoggerInstance.log('[publish] createNftErcWithFixedRate tx', txHash)
 
@@ -321,6 +320,7 @@ export async function createTokensAndPricing(
         dispenserParams
       )
 
+      console.log('nftFactory', nftFactory)
       const result = await nftFactory.createNftWithDatatokenWithDispenser(
         nftCreateData,
         ercParams,
@@ -332,7 +332,7 @@ export async function createTokensAndPricing(
 
       erc721Address = nftCreatedEvent.args.newTokenAddress
       datatokenAddress = tokenCreatedEvent.args.newTokenAddress
-      txHash = trxReceipt.transactionHash
+      txHash = trxReceipt.hash
 
       LoggerInstance.log('[publish] createNftErcWithDispenser tx', txHash)
 

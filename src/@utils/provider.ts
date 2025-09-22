@@ -6,7 +6,6 @@ import {
   LoggerInstance,
   ProviderInstance,
   UrlFile,
-  AbiItem,
   UserCustomParameters,
   getErrorMessage
 } from '@oceanprotocol/lib'

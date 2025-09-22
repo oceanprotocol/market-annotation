@@ -24,7 +24,8 @@ import { validationSchema } from './_validation'
 import { useAbortController } from '@hooks/useAbortController'
 import { setNFTMetadataAndTokenURI } from '@utils/nft'
 import { customProviderUrl } from '../../../app.config.cjs'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useSigner } from '@hooks/useSigner'
+import { useAppKitAccount, useAppKitNetworkCore } from '@reown/appkit/react'
 
 export default function PublishPage({
   content
@@ -32,9 +33,9 @@ export default function PublishPage({
   content: { title: string; description: string; warning: string }
 }): ReactElement {
   const { debug } = useUserPreferences()
-  const { address: accountId } = useAccount()
-  const { data: signer } = useSigner()
-  const { chain } = useNetwork()
+  const { address: accountId } = useAppKitAccount()
+  const { signer } = useSigner()
+  const { chainId } = useAppKitNetworkCore()
   const { isInPurgatory, purgatoryData } = useAccountPurgatory(accountId)
   const scrollToRef = useRef()
   const nftFactory = useNftFactory()
@@ -68,7 +69,7 @@ export default function PublishPage({
     }))
 
     try {
-      const config = getOceanConfig(chain?.id)
+      const config = getOceanConfig(chainId)
 
       LoggerInstance.log('[publish] using config: ', config)
 
@@ -210,7 +211,7 @@ export default function PublishPage({
         newAbortController()
       )
       const tx = await res.wait()
-      if (!tx?.transactionHash)
+      if (!tx?.hash)
         throw new Error(
           'Metadata could not be written into the NFT. Please try again.'
         )
@@ -222,7 +223,7 @@ export default function PublishPage({
         '3': {
           ...prevState['3'],
           status: tx ? 'success' : 'error',
-          txHash: tx?.transactionHash
+          txHash: tx?.hash
         }
       }))
 

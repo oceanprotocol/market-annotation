@@ -1,12 +1,12 @@
 import { useAsset } from '@context/Asset'
-import { Asset } from '@oceanprotocol/ddo-js'
 import AddToken from '@shared/AddToken'
 import ExplorerLink from '@shared/ExplorerLink'
 import Publisher from '@shared/Publisher'
 import React, { ReactElement } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
 import styles from './MetaAsset.module.css'
 import { getOceanConfig } from '@utils/ocean'
+import { useAppKitNetworkCore } from '@reown/appkit/react'
+import { appkit } from '@context/Appkit'
 
 export default function MetaAsset({
   asset,
@@ -15,12 +15,12 @@ export default function MetaAsset({
   asset: AssetExtended
   isBlockscoutExplorer: boolean
 }): ReactElement {
-  const { chain } = useNetwork()
-  const chainId = chain?.id || 11155111
+  const { chainId } = useAppKitNetworkCore()
   const oceanConfig = getOceanConfig(chainId)
   const symbol = oceanConfig.oceanTokenSymbol
   const { isAssetNetwork } = useAsset()
-  const { connector: activeConnector } = useAccount()
+  const connectionInfo = appkit.getConnectors()
+  const connector = connectionInfo[0]?.type
 
   const dataTokenSymbol = asset?.datatokens[0]?.symbol
 
@@ -41,7 +41,7 @@ export default function MetaAsset({
         >
           {`Accessed with ${dataTokenSymbol}`}
         </ExplorerLink>
-        {activeConnector?.name === 'MetaMask' && isAssetNetwork && (
+        {connector === 'INJECTED' && isAssetNetwork && (
           <span className={styles.addWrap}>
             <AddToken
               address={asset?.services[0].datatokenAddress}

@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Router as FactoryRouter, LoggerInstance } from '@oceanprotocol/lib'
+import { Router as FactoryRouter } from '@oceanprotocol/lib'
 import { getOceanConfig } from '@utils/ocean'
-import { useNetwork, useSigner } from 'wagmi'
-import { ethers } from 'ethers'
 import { Fees, TokenDetails } from '../@types/factoryRouter/FactoryRouter.type'
 import { OpcFee } from '@context/MarketMetadata/_types'
+import { useAppKitNetworkCore } from '@reown/appkit/react'
+import { useSigner } from './useSigner'
+import { Contract, formatUnits } from 'ethers'
+import { useProvider } from './useProvider'
 
 function useFactoryRouter() {
-  const { chain } = useNetwork()
-  const { data: signer } = useSigner()
+  const { chainId } = useAppKitNetworkCore()
+  const { signer } = useSigner()
+  const provider = useProvider()
+
   const [factoryRouter, setFactoryRouter] = useState<FactoryRouter>()
   const [approvedTokens, setApprovedTokens] = useState<TokenDetails[]>([])
   const [fees, setFees] = useState<Fees>({
@@ -19,13 +23,13 @@ function useFactoryRouter() {
   })
 
   useEffect(() => {
-    if (!signer || !chain?.id) return
-    const config = getOceanConfig(chain.id)
+    if (!signer || !chainId) return
+    const config = getOceanConfig(chainId)
     if (!config) return
     setFactoryRouter(
       new FactoryRouter(config?.routerFactoryAddress, signer, config.chainId)
     )
-  }, [signer, chain?.id])
+  }, [signer, chainId])
 
   const fetchFees = async (router: FactoryRouter) => {
     try {
@@ -36,10 +40,10 @@ function useFactoryRouter() {
       ])
 
       return {
-        swapOceanFee: ethers.utils.formatUnits(opcFees[0], 18),
-        swapNonOceanFee: ethers.utils.formatUnits(opcFees[1], 18),
-        consumeFee: ethers.utils.formatUnits(consumeFee, 18),
-        providerFee: ethers.utils.formatUnits(providerFee, 18)
+        swapOceanFee: formatUnits(opcFees[0], 18),
+        swapNonOceanFee: formatUnits(opcFees[1], 18),
+        consumeFee: formatUnits(consumeFee, 18),
+        providerFee: formatUnits(providerFee, 18)
       }
     } catch (error: any) {
       if (
@@ -70,11 +74,7 @@ function useFactoryRouter() {
       'function symbol() view returns (string)',
       'function name() view returns (string)'
     ]
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      tokenAbi,
-      signer.provider
-    )
+    const tokenContract = new Contract(tokenAddress, tokenAbi, provider)
 
     const [decimals, symbol, name] = await Promise.all([
       tokenContract.decimals(),

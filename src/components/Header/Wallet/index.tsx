@@ -4,19 +4,15 @@ import Details from './Details'
 import Tooltip from '@shared/atoms/Tooltip'
 import Network from './Network'
 import styles from './index.module.css'
-import { useAccount } from 'wagmi'
+import { useAppKitAccount } from '@reown/appkit/react'
 
 export default function Wallet(): ReactElement {
-  const { address: accountId } = useAccount()
+  const { address } = useAppKitAccount()
 
   return (
     <div className={styles.wallet}>
       <Network />
-      <Tooltip
-        content={<Details />}
-        trigger="click focus"
-        disabled={!accountId}
-      >
+      <Tooltip content={<Details />} trigger="click focus" disabled={!address}>
         <Account />
       </Tooltip>
     </div>
