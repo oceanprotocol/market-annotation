@@ -45,13 +45,30 @@ export function getOceanConfig(network: string | number): Config {
     config = { ...config, ...sanitizeDevelopmentConfig(config) }
   }
 
-  // Override RPC URL for Sepolia if it's set (the reason is ocean.js supports only infura)
-  if (network === 11155111 && process.env.NEXT_PUBLIC_NODE_URI) {
-    config.nodeUri = process.env.NEXT_PUBLIC_NODE_URI
-    config.oceanTokenSymbol =
-      process.env.NEXT_PUBLIC_OCEAN_TOKEN_SYMBOL || 'WETH'
-    config.oceanTokenAddress = process.env.NEXT_PUBLIC_OCEAN_TOKEN_ADDRESS
-    // config.oceanNodeUri = process.env.NEXT_PUBLIC_NODE_URL
+  // Resolve fallback WETH token addresses per supported networks
+  const netKey =
+    typeof network === 'number'
+      ? String(network)
+      : String(network).toLowerCase()
+  const WETH_BY_NETWORK: Record<string, string> = {
+    '1': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    mainnet: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    '10': '0x4200000000000000000000000000000000000006',
+    optimism: '0x4200000000000000000000000000000000000006',
+    '137': '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+    polygon: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+    '11155111': '0x5f207d42f869fd1c71d7f0f81a2a67fc20ff7323',
+    sepolia: '0x5f207d42f869fd1c71d7f0f81a2a67fc20ff7323'
+  }
+
+  const envTokenSymbol = process.env.NEXT_PUBLIC_OCEAN_TOKEN_SYMBOL || 'WETH'
+  const envTokenAddress = process.env.NEXT_PUBLIC_OCEAN_TOKEN_ADDRESS
+  const fallbackTokenAddress = WETH_BY_NETWORK[netKey]
+
+  config.oceanTokenSymbol = envTokenSymbol
+
+  if (!config.oceanTokenAddress) {
+    config.oceanTokenAddress = envTokenAddress || fallbackTokenAddress
   }
 
   return config as Config
