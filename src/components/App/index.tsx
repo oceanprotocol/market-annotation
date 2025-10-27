@@ -10,6 +10,7 @@ import { ToastContainer } from 'react-toastify'
 import contentPurgatory from '../../../content/purgatory.json'
 import { useMarketMetadata } from '@context/MarketMetadata'
 import { useAppKitAccount } from '@reown/appkit/react'
+import { useRouter } from 'next/router'
 
 export default function App({
   children
@@ -19,13 +20,16 @@ export default function App({
   const { siteContent, appConfig } = useMarketMetadata()
   const { address } = useAppKitAccount()
   const { isInPurgatory, purgatoryData } = useAccountPurgatory(address)
+  const router = useRouter()
+
+  const isHomePage = router.pathname === '/'
 
   return (
-    <div className={styles.app}>
+    <div className={`${styles.app} ${isHomePage ? styles.homePage : ''}`}>
       {siteContent?.announcement !== '' && (
         <AnnouncementBanner text={siteContent?.announcement} />
       )}
-      <Header />
+      {!isHomePage && <Header />}
 
       {isInPurgatory && (
         <Alert
@@ -36,7 +40,7 @@ export default function App({
         />
       )}
       <main className={styles.main}>{children}</main>
-      <Footer />
+      {!isHomePage && <Footer />}
 
       {appConfig?.privacyPreferenceCenter === 'true' && (
         <PrivacyPreferenceCenter style="small" />

@@ -14,7 +14,7 @@ import { didToAddress, sleep } from '@shared/DirectMessages/_utils'
 import { getEnsName } from '@utils/ens'
 import usePrevious from '@hooks/usePrevious'
 import useLocalStorage from '@hooks/useLocalStorage'
-import DirectMessages from '@shared/DirectMessages'
+// import DirectMessages from '@shared/DirectMessages'
 import {
   IOrbis,
   IOrbisProfile,
@@ -478,7 +478,7 @@ function OrbisProvider({ children }: { children: ReactNode }): ReactElement {
       }}
     >
       {children}
-      <DirectMessages />
+      {/* <DirectMessages /> */}
     </OrbisContext.Provider>
   )
 }

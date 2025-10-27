@@ -19,6 +19,14 @@
   width: 100%;
 }
 
+.app.homePage {
+  background: #000814;
+}
+
+.app.homePage .main {
+  padding: 0;
+}
+
 .main {
   padding: calc(var(--spacer) * 1.5) 0 calc(var(--spacer) * 2) 0;
 
