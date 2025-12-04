@@ -46,7 +46,7 @@
     "@uiw/react-codemirror": "4.19.5",
     "@urql/exchange-refocus": "^1.0.0",
     "@zazuko/env-node": "^2.1.4",
-    "axios": "^1.7.2",
+    "axios": "^1.13.2",
     "classnames": "^2.5.1",
     "date-fns": "^3.6.0",
     "decimal.js": "^10.4.3",
