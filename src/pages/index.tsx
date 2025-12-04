@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react'
 import Home from '../components/Home'
-import Page from '@shared/Page'
+import Seo from '@shared/Page/Seo'
 import { useRouter } from 'next/router'
 import { useMarketMetadata } from '@context/MarketMetadata'
 
@@ -9,13 +9,13 @@ export default function PageHome(): ReactElement {
   const router = useRouter()
 
   return (
-    <Page
-      title={siteContent?.siteTitle}
-      description={siteContent?.siteTagline}
-      uri={router.route}
-      headerCenter
-    >
+    <>
+      <Seo
+        title={siteContent?.siteTitle}
+        description={siteContent?.siteTagline}
+        uri={router.route}
+      />
       <Home />
-    </Page>
+    </>
   )
 }
